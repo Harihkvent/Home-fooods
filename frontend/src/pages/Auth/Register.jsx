@@ -14,7 +14,6 @@ const Register = () => {
     email: '',
     password: '',
     phone: '',
-    role: 'customer',
   });
   const [loading, setLoading] = useState(false);
 
@@ -32,12 +31,8 @@ const Register = () => {
       dispatch(loginSuccess(data));
       toast.success('Registration successful!');
       
-      // Redirect based on role
-      if (data.user.role === 'vendor') {
-        navigate('/vendor/dashboard');
-      } else {
-        navigate('/menu');
-      }
+      // Redirect to menu
+      navigate('/menu');
     } catch (error) {
       const message = error.response?.data?.message || 'Registration failed';
       dispatch(loginFailure(message));
@@ -105,20 +100,6 @@ const Register = () => {
               minLength="6"
               placeholder="Create a password (min 6 characters)"
             />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="role">I am a</label>
-            <select
-              id="role"
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              required
-            >
-              <option value="customer">Customer</option>
-              <option value="vendor">Vendor</option>
-            </select>
           </div>
 
           <button type="submit" className="btn btn-primary btn-block" disabled={loading}>

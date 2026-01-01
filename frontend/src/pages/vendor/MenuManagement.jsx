@@ -11,7 +11,7 @@ const MenuManagement = () => {
     name: '',
     description: '',
     price: '',
-    category: 'main-course',
+    category: 'breakfast',
     isAvailable: true,
     preparationTime: '',
     servingSize: '',
@@ -22,11 +22,12 @@ const MenuManagement = () => {
   const [success, setSuccess] = useState('');
 
   const categories = [
-    { value: 'appetizer', label: 'Appetizer' },
-    { value: 'main-course', label: 'Main Course' },
-    { value: 'dessert', label: 'Dessert' },
-    { value: 'beverage', label: 'Beverage' },
-    { value: 'snack', label: 'Snack' },
+    { value: 'breakfast', label: 'Breakfast' },
+    { value: 'lunch', label: 'Lunch' },
+    { value: 'dinner', label: 'Dinner' },
+    { value: 'snacks', label: 'Snacks' },
+    { value: 'desserts', label: 'Desserts' },
+    { value: 'beverages', label: 'Beverages' },
   ];
 
   const dietaryOptions = ['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Spicy'];
@@ -151,7 +152,7 @@ const MenuManagement = () => {
       name: '',
       description: '',
       price: '',
-      category: 'main-course',
+      category: 'breakfast',
       isAvailable: true,
       preparationTime: '',
       servingSize: '',

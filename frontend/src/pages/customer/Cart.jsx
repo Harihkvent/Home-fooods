@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { cartService } from '../../services';
@@ -10,6 +10,7 @@ const Cart = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { items, totalAmount } = useSelector((state) => state.cart);
+  const [updating, setUpdating] = useState({});
 
   useEffect(() => {
     fetchCart();
@@ -25,11 +26,34 @@ const Cart = () => {
   };
 
   const handleUpdateQuantity = async (itemId, quantity) => {
+    if (quantity < 1) {
+      handleRemove(itemId);
+      return;
+    }
+
+    // Prevent multiple simultaneous updates
+    if (updating[itemId]) return;
+    
+    setUpdating(prev => ({ ...prev, [itemId]: true }));
+    
     try {
-      await cartService.updateCartItem(itemId, quantity);
+      // Update UI immediately for better UX
       dispatch(updateItemQuantity({ menuItemId: itemId, quantity }));
+      
+      // Then sync with backend
+      const response = await cartService.updateCartItem(itemId, quantity);
+      
+      // Update from server response to ensure sync
+      if (response.success) {
+        dispatch(setCart(response.cart));
+      }
     } catch (error) {
-      toast.error('Error updating cart');
+      // Revert on error
+      const errorMsg = error.response?.data?.message || 'Error updating cart';
+      toast.error(errorMsg);
+      fetchCart(); // Refetch to sync
+    } finally {
+      setUpdating(prev => ({ ...prev, [itemId]: false }));
     }
   };
 
@@ -75,11 +99,17 @@ const Cart = () => {
                   <p className="item-price">₹{item.price}</p>
                 </div>
                 <div className="item-quantity">
-                  <button onClick={() => handleUpdateQuantity(item.menuItemId, item.quantity - 1)}>
+                  <button 
+                    onClick={() => handleUpdateQuantity(item.menuItemId, item.quantity - 1)}
+                    disabled={updating[item.menuItemId] || item.quantity <= 1}
+                  >
                     -
                   </button>
                   <span>{item.quantity}</span>
-                  <button onClick={() => handleUpdateQuantity(item.menuItemId, item.quantity + 1)}>
+                  <button 
+                    onClick={() => handleUpdateQuantity(item.menuItemId, item.quantity + 1)}
+                    disabled={updating[item.menuItemId]}
+                  >
                     +
                   </button>
                 </div>

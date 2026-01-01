@@ -29,7 +29,7 @@ const Login = () => {
       dispatch(loginSuccess(data));
       toast.success('Login successful!');
       
-      // Redirect based on role
+      // Redirect based on role (vendor or customer)
       if (data.user.role === 'vendor') {
         navigate('/vendor/dashboard');
       } else {

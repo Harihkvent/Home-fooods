@@ -12,8 +12,16 @@ exports.createOrder = async (req, res, next) => {
   try {
     const { pickupDetails, paymentMethod } = req.body;
 
+    // Validate pickup details
+    if (!pickupDetails || !pickupDetails.pickupTime) {
+      return res.status(400).json({
+        success: false,
+        message: 'Pickup details are required',
+      });
+    }
+
     // Get user's cart
-    const cart = await Cart.findOne({ userId: req.user.id });
+    const cart = await Cart.findOne({ userId: req.user.id }).populate('items.menuItemId');
 
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({
@@ -22,14 +30,31 @@ exports.createOrder = async (req, res, next) => {
       });
     }
 
+    // Get vendorId from first menu item
+    const vendorId = cart.items[0].menuItemId.vendorId;
+    
+    if (!vendorId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vendor information not found',
+      });
+    }
+
     // Get vendor settings for pricing
-    const vendorId = cart.items[0].menuItemId.vendorId || req.body.vendorId;
     const vendorSettings = await VendorSettings.findOne({ vendorId });
 
     const subtotal = cart.totalAmount;
-    const packagingFee = vendorSettings?.packagingFee || 0;
-    const tax = (subtotal * (vendorSettings?.taxRate || 0)) / 100;
+    const packagingFee = vendorSettings?.packagingFee || 20;
+    const taxRate = vendorSettings?.taxRate || 5;
+    const tax = Math.round((subtotal * taxRate) / 100);
     const total = subtotal + packagingFee + tax;
+
+    // Generate order number
+    const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
+    // Parse pickup time
+    const pickupDate = new Date(pickupDetails.pickupTime);
+    const timeSlot = pickupDetails.timeSlot || `${pickupDate.getHours()}:00-${pickupDate.getHours() + 1}:00`;
 
     // Create Razorpay order if payment method is online
     let razorpayOrder = null;
@@ -37,7 +62,7 @@ exports.createOrder = async (req, res, next) => {
       const options = {
         amount: Math.round(total * 100), // amount in paise
         currency: 'INR',
-        receipt: `rcpt_${Date.now()}`,
+        receipt: orderNumber,
       };
 
       try {
@@ -53,14 +78,16 @@ exports.createOrder = async (req, res, next) => {
 
     // Create order
     const order = await Order.create({
+      orderNumber,
       userId: req.user.id,
       vendorId: vendorId,
       items: cart.items.map(item => ({
-        menuItemId: item.menuItemId,
+        menuItemId: item.menuItemId._id,
         name: item.name,
         price: item.price,
         quantity: item.quantity,
         subtotal: item.subtotal,
+        image: item.image || item.menuItemId.images?.[0] || '',
       })),
       pricing: {
         subtotal,
@@ -69,13 +96,15 @@ exports.createOrder = async (req, res, next) => {
         total,
       },
       pickupDetails: {
-        ...pickupDetails,
+        date: pickupDate,
+        timeSlot: timeSlot,
         customerName: req.user.name,
         customerPhone: req.user.phone,
+        specialInstructions: pickupDetails.specialInstructions || '',
       },
       paymentDetails: {
-        method: paymentMethod,
-        status: paymentMethod === 'cash' ? 'pending' : 'pending',
+        method: paymentMethod || 'cod',
+        status: paymentMethod === 'cod' ? 'pending' : 'pending',
         razorpayOrderId: razorpayOrder?.id,
       },
       statusHistory: [{
@@ -95,6 +124,7 @@ exports.createOrder = async (req, res, next) => {
       razorpayOrder,
     });
   } catch (error) {
+    console.error('Create order error:', error);
     next(error);
   }
 };

@@ -51,7 +51,12 @@ const ProtectedRoute = ({ children, role }) => {
 function App() {
   return (
     <Provider store={store}>
-      <BrowserRouter>
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
         <div className="app">
           <Navbar />
           <main>

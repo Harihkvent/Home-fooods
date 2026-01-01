@@ -94,10 +94,17 @@ exports.updateCartItem = async (req, res, next) => {
   try {
     const { menuItemId, quantity } = req.body;
 
-    if (!menuItemId || !quantity) {
+    if (!menuItemId) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide menuItemId and quantity',
+        message: 'Please provide menuItemId',
+      });
+    }
+
+    if (quantity === undefined || quantity === null) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide quantity',
       });
     }
 
@@ -121,12 +128,14 @@ exports.updateCartItem = async (req, res, next) => {
       });
     }
 
-    if (quantity <= 0) {
+    const parsedQuantity = parseInt(quantity);
+
+    if (parsedQuantity <= 0) {
       cart.items.splice(itemIndex, 1);
     } else {
-      cart.items[itemIndex].quantity = parseInt(quantity);
+      cart.items[itemIndex].quantity = parsedQuantity;
       cart.items[itemIndex].subtotal = 
-        cart.items[itemIndex].price * parseInt(quantity);
+        cart.items[itemIndex].price * parsedQuantity;
     }
 
     await cart.save();
@@ -136,6 +145,7 @@ exports.updateCartItem = async (req, res, next) => {
       cart,
     });
   } catch (error) {
+    console.error('Update cart error:', error);
     next(error);
   }
 };

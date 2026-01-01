@@ -6,7 +6,7 @@ const { sendTokenResponse } = require('../utils/helpers');
 // @access  Public
 exports.register = async (req, res, next) => {
   try {
-    const { name, email, password, phone, role } = req.body;
+    const { name, email, password, phone } = req.body;
 
     // Check if user exists
     const existingUser = await User.findOne({ email });
@@ -17,13 +17,13 @@ exports.register = async (req, res, next) => {
       });
     }
 
-    // Create user
+    // Create user - always as customer
     const user = await User.create({
       name,
       email,
       password,
       phone,
-      role: role || 'customer',
+      role: 'customer',
     });
 
     sendTokenResponse(user, 201, res);

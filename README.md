@@ -4,11 +4,13 @@
 
 ## 📖 Overview
 
-Home Foods is a web-based food ordering platform designed specifically for small-scale home food vendors. It provides a complete solution for managing an online food business with features like menu management, shopping cart, payment processing, and pickup scheduling - similar to Swiggy/Zomato but **without home delivery**.
+Home Foods is a web-based food ordering platform designed for a single home food vendor to manage their online food business. It provides a complete solution for managing an online food business with features like menu management, shopping cart, payment processing, and pickup scheduling - similar to Swiggy/Zomato but **without home delivery**.
+
+**Note:** This application is designed for **one vendor only**. Customers can register and order, but there is only one vendor account that manages all menu items and orders.
 
 ## ✨ Key Features
 
-- 🔐 **User Authentication** - Secure registration and login for customers and vendors
+- 🔐 **Customer Registration** - Simple signup for customers (vendor account is pre-configured)
 - 🍽️ **Menu Browsing** - View food items with images, descriptions, prices, and dietary information
 - 🛒 **Shopping Cart** - Add/remove items, modify quantities with real-time price calculation
 - 📅 **Pickup Scheduling** - Select preferred date and time slots for order pickup
@@ -93,17 +95,35 @@ REACT_APP_RAZORPAY_KEY_ID=your_razorpay_key_id
 npm run dev
 
 # Start frontend development server (from frontend directory)
-npm start
+npm run dev
 ```
 
 The application will be available at:
 
-- Frontend: `http://localhost:3000`
+- Frontend: `http://localhost:3000` (or configured port)
 - Backend API: `http://localhost:5000`
+
+### Setting Up the Vendor Account
+
+Since this application supports only one vendor, you need to create the vendor account manually:
+
+```bash
+# Run the vendor creation script
+cd backend
+node scripts/createVendor.js
+```
+
+This will create a vendor account with:
+- **Email:** vendor@homefoods.com
+- **Password:** vendor123
+
+**⚠️ Important:** Change the password after first login!
+
+See [VENDOR_SETUP.md](VENDOR_SETUP.md) for more details.
 
 ## 👥 User Roles
 
-### Customer
+### Customer (Public Registration)
 
 - Browse menu items
 - Add items to cart
@@ -113,7 +133,7 @@ The application will be available at:
 - View order history
 - Leave reviews
 
-### Vendor
+### Vendor (Single Pre-configured Account)
 
 - Manage menu items (Create, Update, Delete)
 - View and manage orders

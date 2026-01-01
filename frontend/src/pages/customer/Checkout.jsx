@@ -22,9 +22,14 @@ const Checkout = () => {
       navigate('/cart');
       return;
     }
-    fetchPickupSlots();
     setDefaultDate();
   }, []);
+
+  useEffect(() => {
+    if (selectedDate) {
+      fetchPickupSlots();
+    }
+  }, [selectedDate]);
 
   const setDefaultDate = () => {
     const tomorrow = new Date();
@@ -34,16 +39,23 @@ const Checkout = () => {
 
   const fetchPickupSlots = async () => {
     try {
-      const vendorId = items[0]?.vendorId;
-      if (vendorId) {
-        const { data } = await api.get(`/pickupSlots?vendorId=${vendorId}`);
-        setPickupSlots(data.slots || []);
+      // Get vendor ID from the first menu item
+      if (items.length > 0) {
+        const { data: menuData } = await api.get(`/menu/${items[0].menuItemId}`);
+        const vendorId = menuData.item.vendorId;
+        
+        if (vendorId && selectedDate) {
+          const { data } = await api.get(`/pickup-slots?vendorId=${vendorId}&date=${selectedDate}`);
+          setPickupSlots(data.slots || []);
+        }
       }
     } catch (err) {
+      console.error('Error fetching slots:', err);
+      // Fallback to default slots
       setPickupSlots([
-        { startTime: '10:00', endTime: '11:00', maxOrders: 10 },
-        { startTime: '12:00', endTime: '13:00', maxOrders: 10 },
-        { startTime: '18:00', endTime: '19:00', maxOrders: 10 },
+        { startTime: '10:00', endTime: '11:00', maxOrders: 10, available: true },
+        { startTime: '12:00', endTime: '13:00', maxOrders: 10, available: true },
+        { startTime: '18:00', endTime: '19:00', maxOrders: 10, available: true },
       ]);
     }
   };
@@ -62,25 +74,39 @@ const Checkout = () => {
       return;
     }
 
+    if (!selectedDate) {
+      setError('Please select a pickup date');
+      return;
+    }
+
     try {
       setLoading(true);
       setError('');
 
-      const pickupDateTime = new Date(`${selectedDate}T${selectedSlot.split('-')[0]}`);
+      // Parse the time slot (format: "10:00-11:00")
+      const [startTime] = selectedSlot.split('-');
+      const pickupDateTime = new Date(`${selectedDate}T${startTime}:00`);
 
       const orderData = {
         pickupDetails: {
-          pickupTime: pickupDateTime,
-          specialInstructions,
+          pickupTime: pickupDateTime.toISOString(),
+          timeSlot: selectedSlot,
+          specialInstructions: specialInstructions || '',
         },
-        paymentMethod,
+        paymentMethod: paymentMethod || 'cod',
       };
 
       const { data } = await api.post('/orders/create', orderData);
+      
+      // Clear cart in Redux
       dispatch(clearCart());
+      
+      // Navigate to order details
       navigate(`/orders/${data.order._id}`);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to place order');
+      console.error('Order creation error:', err);
+      const errorMessage = err.response?.data?.message || 'Failed to place order. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -124,17 +150,23 @@ const Checkout = () => {
             </div>
             <div className="form-group">
               <label>Pickup Time Slot</label>
-              <div className="time-slots">
-                {pickupSlots.map((slot, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedSlot(`${slot.startTime}-${slot.endTime}`)}
-                    className={`time-slot ${selectedSlot === `${slot.startTime}-${slot.endTime}` ? 'selected' : ''}`}
-                  >
-                    {slot.startTime} - {slot.endTime}
-                  </button>
-                ))}
-              </div>
+              {pickupSlots.length === 0 ? (
+                <p className="no-slots">No pickup slots available for this date</p>
+              ) : (
+                <div className="time-slots">
+                  {pickupSlots.map((slot, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedSlot(`${slot.startTime}-${slot.endTime}`)}
+                      className={`time-slot ${selectedSlot === `${slot.startTime}-${slot.endTime}` ? 'selected' : ''} ${!slot.available ? 'disabled' : ''}`}
+                      disabled={!slot.available}
+                    >
+                      {slot.startTime} - {slot.endTime}
+                      {!slot.available && <span className="full-badge">Full</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="form-group">
               <label>Special Instructions (Optional)</label>

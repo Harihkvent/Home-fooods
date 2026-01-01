@@ -15,7 +15,7 @@ const VendorOrders = () => {
   const statusOptions = [
     { value: 'all', label: 'All Orders' },
     { value: 'pending', label: 'Pending' },
-    { value: 'accepted', label: 'Accepted' },
+    { value: 'confirmed', label: 'Confirmed' },
     { value: 'preparing', label: 'Preparing' },
     { value: 'ready', label: 'Ready' },
     { value: 'completed', label: 'Completed' },
@@ -70,7 +70,7 @@ const VendorOrders = () => {
   const getStatusBadge = (status) => {
     const statusColors = {
       pending: 'badge-warning',
-      accepted: 'badge-info',
+      confirmed: 'badge-info',
       preparing: 'badge-primary',
       ready: 'badge-success',
       completed: 'badge-success',
@@ -81,8 +81,8 @@ const VendorOrders = () => {
 
   const getNextStatusOptions = (currentStatus) => {
     const statusFlow = {
-      pending: ['accepted', 'cancelled'],
-      accepted: ['preparing', 'cancelled'],
+      pending: ['confirmed', 'cancelled'],
+      confirmed: ['preparing', 'cancelled'],
       preparing: ['ready', 'cancelled'],
       ready: ['completed'],
     };
@@ -151,8 +151,13 @@ const VendorOrders = () => {
                 <h4>Items:</h4>
                 {order.items?.map((item, index) => (
                   <div key={index} className="item-row">
-                    <span>{item.name} x {item.quantity}</span>
-                    <span>{formatCurrency(item.subtotal)}</span>
+                    {item.image && (
+                      <img src={item.image} alt={item.name} className="item-thumbnail" />
+                    )}
+                    <div className="item-details">
+                      <span>{item.name} x {item.quantity}</span>
+                      <span className="item-price">{formatCurrency(item.subtotal)}</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -208,8 +213,13 @@ const VendorOrders = () => {
                   <h3>Order Items</h3>
                   {selectedOrder.items?.map((item, index) => (
                     <div key={index} className="detail-row">
-                      <span>{item.name} x {item.quantity}</span>
-                      <span>{formatCurrency(item.subtotal)}</span>
+                      {item.image && (
+                        <img src={item.image} alt={item.name} className="item-thumbnail" />
+                      )}
+                      <div className="item-info">
+                        <span>{item.name} x {item.quantity}</span>
+                        <span>{formatCurrency(item.subtotal)}</span>
+                      </div>
                     </div>
                   ))}
                   <div className="detail-row total">

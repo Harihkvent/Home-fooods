@@ -78,30 +78,38 @@ const Menu = () => {
         </div>
 
         <div className="menu-grid">
-          {items.map((item) => (
-            <div key={item._id} className="menu-card">
-              <div className="menu-image">
-                {item.images[0] ? (
-                  <img src={item.images[0]} alt={item.name} />
-                ) : (
-                  <div className="no-image">🍽️</div>
-                )}
-              </div>
-              <div className="menu-info">
-                <h3>{item.name}</h3>
-                <p className="menu-description">{item.description}</p>
-                <div className="menu-footer">
-                  <span className="menu-price">₹{item.price}</span>
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => handleAddToCart(item)}
-                  >
-                    Add to Cart
-                  </button>
+          {items.length === 0 ? (
+            <p className="no-items">No menu items available yet.</p>
+          ) : (
+            items.map((item) => (
+              <div key={item._id} className="menu-card">
+                <div className="menu-image">
+                  {item.images[0] ? (
+                    <img src={item.images[0]} alt={item.name} />
+                  ) : (
+                    <div className="no-image">🍽️</div>
+                  )}
+                  {!item.isAvailable && (
+                    <div className="unavailable-badge">Not Available</div>
+                  )}
+                </div>
+                <div className="menu-info">
+                  <h3>{item.name}</h3>
+                  <p className="menu-description">{item.description}</p>
+                  <div className="menu-footer">
+                    <span className="menu-price">₹{item.price}</span>
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => handleAddToCart(item)}
+                      disabled={!item.isAvailable}
+                    >
+                      {item.isAvailable ? 'Add to Cart' : 'Not Available'}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>

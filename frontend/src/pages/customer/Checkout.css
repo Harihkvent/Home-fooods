@@ -103,9 +103,10 @@
   cursor: pointer;
   transition: all 0.3s;
   font-weight: 500;
+  position: relative;
 }
 
-.time-slot:hover {
+.time-slot:hover:not(.disabled) {
   border-color: #667eea;
 }
 
@@ -113,6 +114,32 @@
   background: #667eea;
   color: white;
   border-color: #667eea;
+}
+
+.time-slot.disabled {
+  background: #f1f3f5;
+  color: #adb5bd;
+  cursor: not-allowed;
+  border-color: #dee2e6;
+}
+
+.full-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  background: #e03131;
+  color: white;
+  border-radius: 4px;
+}
+
+.no-slots {
+  color: #868e96;
+  font-style: italic;
+  padding: 1rem;
+  text-align: center;
+  background: #f8f9fa;
+  border-radius: 8px;
 }
 
 .payment-methods {

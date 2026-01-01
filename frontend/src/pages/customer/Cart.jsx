@@ -31,17 +31,20 @@ const Cart = () => {
       return;
     }
 
+    // Extract just the ID string if it's an object
+    const menuItemId = typeof itemId === 'object' ? itemId._id : itemId;
+
     // Prevent multiple simultaneous updates
-    if (updating[itemId]) return;
+    if (updating[menuItemId]) return;
     
-    setUpdating(prev => ({ ...prev, [itemId]: true }));
+    setUpdating(prev => ({ ...prev, [menuItemId]: true }));
     
     try {
       // Update UI immediately for better UX
-      dispatch(updateItemQuantity({ menuItemId: itemId, quantity }));
+      dispatch(updateItemQuantity({ menuItemId, quantity }));
       
       // Then sync with backend
-      const response = await cartService.updateCartItem(itemId, quantity);
+      const response = await cartService.updateCartItem(menuItemId, quantity);
       
       // Update from server response to ensure sync
       if (response.success) {
@@ -53,14 +56,17 @@ const Cart = () => {
       toast.error(errorMsg);
       fetchCart(); // Refetch to sync
     } finally {
-      setUpdating(prev => ({ ...prev, [itemId]: false }));
+      setUpdating(prev => ({ ...prev, [menuItemId]: false }));
     }
   };
 
   const handleRemove = async (itemId) => {
+    // Extract just the ID string if it's an object
+    const menuItemId = typeof itemId === 'object' ? itemId._id : itemId;
+    
     try {
-      await cartService.removeFromCart(itemId);
-      dispatch(removeItem(itemId));
+      await cartService.removeFromCart(menuItemId);
+      dispatch(removeItem(menuItemId));
       toast.success('Item removed from cart');
     } catch (error) {
       toast.error('Error removing item');
@@ -85,45 +91,48 @@ const Cart = () => {
         
         <div className="cart-content">
           <div className="cart-items">
-            {items.map((item) => (
-              <div key={item.menuItemId} className="cart-item">
-                <div className="item-image">
-                  {item.image ? (
-                    <img src={item.image} alt={item.name} />
-                  ) : (
-                    <div className="no-image">🍽️</div>
-                  )}
-                </div>
-                <div className="item-details">
-                  <h3>{item.name}</h3>
-                  <p className="item-price">₹{item.price}</p>
-                </div>
-                <div className="item-quantity">
-                  <button 
-                    onClick={() => handleUpdateQuantity(item.menuItemId, item.quantity - 1)}
-                    disabled={updating[item.menuItemId] || item.quantity <= 1}
+            {items.map((item) => {
+              const itemId = typeof item.menuItemId === 'object' ? item.menuItemId._id : item.menuItemId;
+              return (
+                <div key={itemId} className="cart-item">
+                  <div className="item-image">
+                    {item.image ? (
+                      <img src={item.image} alt={item.name} />
+                    ) : (
+                      <div className="no-image">🍽️</div>
+                    )}
+                  </div>
+                  <div className="item-details">
+                    <h3>{item.name}</h3>
+                    <p className="item-price">₹{item.price}</p>
+                  </div>
+                  <div className="item-quantity">
+                    <button 
+                      onClick={() => handleUpdateQuantity(itemId, item.quantity - 1)}
+                      disabled={updating[itemId] || item.quantity <= 1}
+                    >
+                      -
+                    </button>
+                    <span>{item.quantity}</span>
+                    <button 
+                      onClick={() => handleUpdateQuantity(itemId, item.quantity + 1)}
+                      disabled={updating[itemId]}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <div className="item-subtotal">
+                    ₹{item.subtotal}
+                  </div>
+                  <button
+                    className="remove-btn"
+                    onClick={() => handleRemove(itemId)}
                   >
-                    -
-                  </button>
-                  <span>{item.quantity}</span>
-                  <button 
-                    onClick={() => handleUpdateQuantity(item.menuItemId, item.quantity + 1)}
-                    disabled={updating[item.menuItemId]}
-                  >
-                    +
+                    ×
                   </button>
                 </div>
-                <div className="item-subtotal">
-                  ₹{item.subtotal}
-                </div>
-                <button
-                  className="remove-btn"
-                  onClick={() => handleRemove(item.menuItemId)}
-                >
-                  ×
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="cart-summary">

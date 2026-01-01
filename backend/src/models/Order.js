@@ -61,8 +61,8 @@ const orderSchema = new mongoose.Schema({
   paymentDetails: {
     method: {
       type: String,
-      enum: ['online', 'cash'],
-      default: 'online',
+      enum: ['online', 'cod', 'cash'],
+      default: 'cod',
     },
     status: {
       type: String,

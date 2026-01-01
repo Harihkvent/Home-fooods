@@ -94,6 +94,8 @@ exports.updateCartItem = async (req, res, next) => {
   try {
     const { menuItemId, quantity } = req.body;
 
+    console.log('Update cart request:', { menuItemId, quantity, userId: req.user.id });
+
     if (!menuItemId) {
       return res.status(400).json({
         success: false,
@@ -117,9 +119,13 @@ exports.updateCartItem = async (req, res, next) => {
       });
     }
 
+    console.log('Cart items:', cart.items.map(i => ({ id: i.menuItemId.toString(), name: i.name })));
+
     const itemIndex = cart.items.findIndex(
-      item => item.menuItemId.toString() === menuItemId
+      item => item.menuItemId.toString() === menuItemId.toString()
     );
+
+    console.log('Item index found:', itemIndex);
 
     if (itemIndex === -1) {
       return res.status(404).json({

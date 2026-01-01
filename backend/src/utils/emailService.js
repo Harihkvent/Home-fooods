@@ -20,15 +20,14 @@ let transporter;
 
 if (process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
   try {
-    transporter = nodemailer.createTransporter({
-      host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT || 587,
+    transporter = nodemailer.createTransport({
+      service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
     });
-    console.log('✓ Email transporter initialized with credentials');
+    console.log('✓ Email transporter configured with Gmail');
   } catch (error) {
     console.log('⚠ Email transporter failed, using MOCK mode:', error.message);
     transporter = createMockTransporter();

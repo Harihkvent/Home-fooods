@@ -41,7 +41,8 @@ const Checkout = () => {
     try {
       // Get vendor ID from the first menu item
       if (items.length > 0) {
-        const { data: menuData } = await api.get(`/menu/${items[0].menuItemId}`);
+        const menuItemId = items[0].menuItemId;
+        const { data: menuData } = await api.get(`/menu/${menuItemId}`);
         const vendorId = menuData.item.vendorId;
         
         if (vendorId && selectedDate) {

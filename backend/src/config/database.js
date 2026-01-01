@@ -11,10 +11,8 @@ const connectDB = async () => {
       return;
     }
 
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    // Remove deprecated options - they're no longer needed in MongoDB Node.js Driver 4.x+
+    const conn = await mongoose.connect(process.env.MONGODB_URI);
     console.log(`✓ MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`✗ MongoDB Error: ${error.message}`);

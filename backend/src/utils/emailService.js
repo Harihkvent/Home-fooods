@@ -1,13 +1,42 @@
 const nodemailer = require('nodemailer');
 
-const transporter = nodemailer.createTransporter({
-  host: process.env.EMAIL_HOST,
-  port: process.env.EMAIL_PORT,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+// Mock transporter for local development when email credentials are not provided
+const createMockTransporter = () => ({
+  sendMail: async (mailOptions) => {
+    console.log('[MOCK EMAIL] Sending email:');
+    console.log('  To:', mailOptions.to);
+    console.log('  Subject:', mailOptions.subject);
+    console.log('  From:', mailOptions.from);
+    return {
+      messageId: `mock_${Date.now()}@localhost`,
+      accepted: [mailOptions.to],
+      response: '250 Mock email sent',
+    };
   },
 });
+
+// Use real nodemailer if credentials are provided, otherwise use mock
+let transporter;
+
+if (process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+  try {
+    transporter = nodemailer.createTransporter({
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT || 587,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+    console.log('✓ Email transporter initialized with credentials');
+  } catch (error) {
+    console.log('⚠ Email transporter failed, using MOCK mode:', error.message);
+    transporter = createMockTransporter();
+  }
+} else {
+  transporter = createMockTransporter();
+  console.log('⚠ Email credentials not found - using MOCK mode for local development');
+}
 
 exports.sendEmail = async (options) => {
   const mailOptions = {

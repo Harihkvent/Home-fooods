@@ -23,20 +23,37 @@ Home Foods is a web-based food ordering platform designed for a single home food
 
 | Layer               | Technology                         |
 | ------------------- | ---------------------------------- |
-| **Frontend**        | React.js with Redux Toolkit        |
+| **Frontend**        | React.js 18 + Vite                 |
+| **State Management**| Redux Toolkit                      |
 | **Backend**         | Node.js with Express.js            |
 | **Database**        | MongoDB with Mongoose ODM          |
-| **Authentication**  | JWT (JSON Web Tokens)              |
-| **Payment Gateway** | Razorpay (India) / Stripe (Global) |
-| **Image Storage**   | Cloudinary / AWS S3                |
-| **Styling**         | CSS Modules / Material-UI          |
+| **Authentication**  | JWT with HTTP-only Cookies         |
+| **Payment Gateway** | Razorpay                           |
+| **Image Storage**   | Cloudinary                         |
+| **Styling**         | CSS Modules                        |
+| **Form Handling**   | React Hook Form                    |
+| **Notifications**   | React Toastify                     |
 
 ## 📂 Project Structure
 
 ```
 Home-Foods/
 ├── backend/          # Express.js API server
-├── frontend/         # React.js application
+│   ├── src/
+│   │   ├── controllers/    # Request handlers
+│   │   ├── models/         # MongoDB schemas
+│   │   ├── routes/         # API endpoints
+│   │   ├── middleware/     # Auth, validation, error handling
+│   │   ├── config/         # Database, Cloudinary, Razorpay config
+│   │   └── utils/          # Helper functions
+│   └── scripts/            # Utility scripts (vendor setup)
+├── frontend/         # React.js + Vite application
+│   └── src/
+│       ├── components/     # Reusable UI components
+│       ├── pages/          # Customer and Vendor pages
+│       ├── redux/          # State management (Redux Toolkit)
+│       ├── services/       # API integration
+│       └── styles/         # CSS files
 └── docs/            # Documentation files
 ```
 
@@ -74,6 +91,7 @@ npm install
 PORT=5000
 MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret_key
+FRONTEND_URL=http://localhost:5173
 RAZORPAY_KEY_ID=your_razorpay_key_id
 RAZORPAY_KEY_SECRET=your_razorpay_key_secret
 CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
@@ -84,8 +102,8 @@ CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 2. Create `.env` file in the `frontend` directory:
 
 ```env
-REACT_APP_API_URL=http://localhost:5000/api
-REACT_APP_RAZORPAY_KEY_ID=your_razorpay_key_id
+VITE_API_URL=http://localhost:5000/api
+VITE_RAZORPAY_KEY_ID=your_razorpay_key_id
 ```
 
 ### Running the Application
@@ -100,7 +118,7 @@ npm run dev
 
 The application will be available at:
 
-- Frontend: `http://localhost:3000` (or configured port)
+- Frontend: `http://localhost:5173` (Vite dev server)
 - Backend API: `http://localhost:5000`
 
 ### Setting Up the Vendor Account
@@ -119,7 +137,7 @@ This will create a vendor account with:
 
 **⚠️ Important:** Change the password after first login!
 
-See [VENDOR_SETUP.md](VENDOR_SETUP.md) for more details.
+See [docs/VENDOR_SETUP.md](docs/VENDOR_SETUP.md) for more details.
 
 ## 👥 User Roles
 
@@ -194,7 +212,8 @@ See [VENDOR_SETUP.md](VENDOR_SETUP.md) for more details.
 
 For detailed technical documentation, design specifications, and implementation guidelines, please refer to:
 
-- [Complete Design Document](./HOME_FOOD_VENDOR_DESIGN.md)
+- [Complete Design Document](docs/HOME_FOOD_VENDOR_DESIGN.md)
+- [Vendor Setup Guide](docs/VENDOR_SETUP.md)
 
 ## 🔒 Security
 
@@ -219,4 +238,4 @@ For questions or support, please contact [your-email@example.com]
 
 ---
 
-**Note:** This project is currently in the design phase. Development will begin once the design document is finalized and approved.
+**Built with ❤️ for home food vendors**
